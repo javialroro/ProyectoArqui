@@ -1,7 +1,7 @@
 include C:\irvine\Irvine32.inc
 
 .data
-    mensaje byte "Ingrese los valores de los polinomios separados por una coma, un punto y coma cuando vaya a hacer el otro polinomio y al terminar incluya un punto",0
+    mensaje byte " Ingrese cada valor del polinomio con la siguiente forma '*valorexponnenteP1*valorexponenteP1;*valorexponenteP2*valorexponenteP2.' ",0
     buffer byte 100 DUP(?)
 
 .code
@@ -21,7 +21,7 @@ evalLoop:
     mov al, [esi] ; Carga el byte apuntado por esi en al
     cmp al, '.'   ; Compara con '.'
     je salir      ; Si es un punto, salta a salir
-    cmp al, ','   ; Compara con ','
+    cmp al, '*'   ; Compara con ','
     je avanzar    ; Si es una coma, avanza al siguiente carácter
     cmp al, ';'   ; Compara con ';'
     je avanzar2 ; Si es un punto y coma, añade el valor a la segunda lista dinamica
@@ -47,7 +47,7 @@ avanzar:
 avanzar2:
     inc esi       ; Avanza al siguiente carácter
 	jmp evalLoop2  ; Salta al siguiente ciclo
-anadirLista:
+anadirLista:                                                ;Quede aqui para hacer lo de los valores
 ; Aqui se añade el valor a la lista dinamica
     call WriteChar
     inc esi       ; Avanza al siguiente carácter
