@@ -3,7 +3,4 @@
   <ItemGroup>
     <MASM Include="main.asm" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="listaDinamica.inc" />
-  </ItemGroup>
 </Project>

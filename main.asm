@@ -1,5 +1,5 @@
-;include C:\irvine\Irvine32.inc
-include listaDinamica.inc
+include C:\irvine\Irvine32.inc
+
 
 .data
     mensaje byte " Ingrese cada valor del polinomio con la siguiente forma '*valorexponnenteP1*valorexponenteP1;*valorexponenteP2*valorexponenteP2.' ",0
@@ -8,12 +8,19 @@ include listaDinamica.inc
     mensajeValor1 byte "El siguiente valor del polinomio 1 es: ",0
     mensajeExponente2 byte "El siguiente exponente del polinomio 2 es: ",0
     mensajeValor2 byte "El siguiente valor del polinomio 2 es: ",0
-    listaDinamica1 Node <>
-    coef byte 0
-    exp byte 0
+
+    coef dw 0
+    exp dw 0
+    heap db 4096 dup(?)
+    freemem dd ?
+    p1 dd ?
+    p2 dd ?
+    p3 dd ?
 .code
 main PROC
-    INVOKE GetProcessHeap
+    lea edx, heap
+    mov freemem, edx
+
     mov edx, OFFSET mensaje
     call WriteString
     call Crlf
@@ -63,18 +70,19 @@ anadirLista:
     mov edx, OFFSET mensajeValor1
     call WriteString
     call WriteChar
-    mov coef, al
+    mov coef, ax
     inc esi       ; Avanza al siguiente carácter
     mov al,[esi] ; Carga el byte apuntado por esi en al]
     call Crlf
     mov edx, OFFSET mensajeExponente1
     call WriteString
     call WriteChar
-    mov exp, al
+    mov exp, ax
     call Crlf
+    call createNode
+    ; Meter a lista dinamica
+
     inc esi       ; Avanza al siguiente carácter
-    call CreateNode
-    call ImprimirLista
     jmp evalLoop  ; Salta al siguiente ciclo
  
  
@@ -83,17 +91,19 @@ anadirLista:
     mov edx, OFFSET mensajeValor2
     call WriteString
     call WriteChar
-    mov coef, al
+    mov coef, ax
     inc esi       ; Avanza al siguiente carácter
     mov al,[esi] ; Carga el byte apuntado por esi en al]
     call Crlf
     mov edx, OFFSET mensajeExponente2
     call WriteString
     call WriteChar
-    mov exp, al
+    mov exp, ax
     call Crlf
+    call createNode
+    ; Meter a lista dinamica
+
     inc esi       ; Avanza al siguiente carácter
-    call CreateNode
     jmp evalLoop2  ; Salta al siguiente ciclo
     
 
@@ -103,5 +113,28 @@ salir:
 
 main ENDP
 
+createNode PROC
+	mov ebx, freemem
+    mov dx, coef
+    mov [ebx], dx
+    add ebx ,2
+    mov dx, exp
+    mov [ebx], dx
+    mov byte ptr [ebx+2], 69
+	add ebx, 6
+    mov freemem, ebx
+	ret
+createNode ENDP
+
+print PROC
+	mov ebx, p1
+    printLoop:
+	mov dx, [ebx]
+	call WriteDec
+	add ebx, 2
+	cmp byte ptr [ebx+2], 0
+	jne printLoop
+    ret
+print ENDP
 
 END main
