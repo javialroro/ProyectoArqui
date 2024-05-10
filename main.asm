@@ -160,19 +160,4 @@ primeraCorrida:
 	ret
 
 
-
-
-
-
-print PROC
-	mov ebx, p1
-    printLoop:
-	mov dx, [ebx]
-	call WriteDec
-	add ebx, 2
-	cmp byte ptr [ebx+2], 0
-	jne printLoop
-    ret
-print ENDP
-
 END main
