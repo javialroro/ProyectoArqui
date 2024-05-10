@@ -11,6 +11,8 @@ include C:\irvine\Irvine32.inc
 
     coef dw 0
     exp dw 0
+    nulo dd 0
+    banderaPolinomio dd 0
     heap db 4096 dup(?)
     freemem dd ?
     p1 dd ?
@@ -20,6 +22,7 @@ include C:\irvine\Irvine32.inc
 main PROC
     lea edx, heap
     mov freemem, edx
+    mov p1, edx
 
     mov edx, OFFSET mensaje
     call WriteString
@@ -39,7 +42,7 @@ evalLoop:
     cmp al, '*'   ; Compara con ','
     je avanzar    ; Si es una coma, avanza al siguiente carácter
     cmp al, ';'   ; Compara con ';'
-    je avanzar2 ; Si es un punto y coma, añade el valor a la segunda lista dinamica
+    je cambioPolinomio ; Si es un punto y coma, añade el valor a la segunda lista dinamica
     jmp anadirLista ; Si no es ni punto ni coma, añade el valor a la primera lista dinamica
     inc esi       ; Incrementa el puntero al buffer
     jmp evalLoop  ; Salta al siguiente ciclo
@@ -56,6 +59,14 @@ evalLoop2:
     jmp anadirLista2 ; Si no es ni punto ni coma, añade el valor a la primera lista dinamica
     inc esi       ; Incrementa el puntero al buffer
     jmp evalLoop2  ; Salta al siguiente ciclo
+
+
+cambioPolinomio:
+    mov edx, freemem
+    mov p2, edx
+    add banderaPolinomio, 1
+    mov nulo,0
+    jmp avanzar2
 
 
 avanzar:
@@ -79,6 +90,8 @@ anadirLista:
     call WriteChar
     mov exp, ax
     call Crlf
+    sub coef, 30h
+    sub exp, 30h
     call createNode
     ; Meter a lista dinamica
 
@@ -100,6 +113,8 @@ anadirLista:
     call WriteChar
     mov exp, ax
     call Crlf
+    sub coef, 30h
+    sub exp, 30h
     call createNode
     ; Meter a lista dinamica
 
@@ -116,15 +131,38 @@ main ENDP
 createNode PROC
 	mov ebx, freemem
     mov dx, coef
-    mov [ebx], dx
-    add ebx ,2
+    mov [ebx], dl
+
+    add ebx ,1
     mov dx, exp
-    mov [ebx], dx
-    mov byte ptr [ebx+2], 69
+    mov [ebx], dl
+
+    add ebx, 1
+    mov edx, nulo
+    cmp nulo, 0
+    je primeraCorrida
+    sub ebx, 6
+    mov edx,nulo
+    mov [ebx], edx
 	add ebx, 6
+    mov nulo, ebx
+    add ebx, 4
     mov freemem, ebx
 	ret
 createNode ENDP
+
+primeraCorrida:
+    mov edx, nulo
+	mov [ebx], edx
+	mov nulo, ebx
+	add ebx, 4
+	mov freemem, ebx
+	ret
+
+
+
+
+
 
 print PROC
 	mov ebx, p1
