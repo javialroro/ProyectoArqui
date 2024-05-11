@@ -13,6 +13,7 @@ include C:\irvine\Irvine32.inc
     exp dw 0
     nulo dd 0
     banderaPolinomio dd 0
+    punteroNuevoNodo dd 0
     heap db 4096 dup(?)
     freemem dd ?
     p1 dd ?
@@ -66,6 +67,10 @@ cambioPolinomio:
     mov p2, edx
     add banderaPolinomio, 1
     mov nulo,0
+
+    ; colocar el valor del puntero de nuevo nodo en 0
+    mov punteroNuevoNodo, 0
+
     jmp avanzar2
 
 
@@ -124,29 +129,54 @@ anadirLista:
 
 salir:
     call Crlf     ; Imprime una nueva línea
+
+    ; guarda la posición en memoria del polinomio resultante
+    mov edx, freemem
+    mov p3, edx
+
     call ExitProcess ; Termina el programa
+	
 
 main ENDP
 
 createNode PROC
 	mov ebx, freemem
+
+    ; almacenar el valor de memoria del nuevo nodo en la "variable"
+    mov punteroNuevoNodo, ebx
+
     mov dx, coef
-    mov [ebx], dl
+    mov [ebx], dx
 
-    add ebx ,1
+    ; avanzar dos posiciones en memoria para llegar al exponente (2 bytes de coef)
+    add ebx ,2
     mov dx, exp
-    mov [ebx], dl
+    mov [ebx], dx
 
-    add ebx, 1
+    ; avanzar dos posiciones en memoria para llegar al puntero del siguiente nodo (2 bytes de exp)
+    add ebx, 2
     mov edx, nulo
     cmp nulo, 0
     je primeraCorrida
-    sub ebx, 6
-    mov edx,nulo
+
+    ; colocar la direccion de memoria del siguiente nodo en el puntero del nodo anterior
+    ; nulo almacena la posicion en memoria del puntero nulo anterior
+    ; punteroNuevoNodo apunta a la direccion de memoria del nuevo nodo en el coeficiente
+    
+    mov ebx, nulo
+    mov edx, punteroNuevoNodo
     mov [ebx], edx
-	add ebx, 6
-    mov nulo, ebx
+
+    ; registro ebx toma direccion en memorio del nuevo nodo
+    mov ebx, punteroNuevoNodo
+    ; se le suma 4 para colocarse en la posicion de memoria del puntero nulo
     add ebx, 4
+    ; nulo toma el valor de la posicion en memoria del nuevo nodo en la parte del puntero
+    mov nulo, ebx
+
+    ; se suma 4 a ebx para colocarse en la siguiente posicion de memoria para el siguiente nodo
+    add ebx, 4
+
     mov freemem, ebx
 	ret
 createNode ENDP
@@ -159,5 +189,20 @@ primeraCorrida:
 	mov freemem, ebx
 	ret
 
+
+
+
+
+
+print PROC
+	mov ebx, p1
+    printLoop:
+	mov dx, [ebx]
+	call WriteDec
+	add ebx, 2
+	cmp byte ptr [ebx+2], 0
+	jne printLoop
+    ret
+print ENDP
 
 END main
