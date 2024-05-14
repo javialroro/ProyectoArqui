@@ -207,19 +207,20 @@ sumar PROC
     mov esi, p1
     mov edi, p2
 
+sumLoop:
     add esi, 2
     add edi, 2
 
     mov eax, [esi]
     mov ebx, [edi]
 
-sumLoop:
     cmp ax, bx
     je iguales
     add esi, 2
     cmp esi, 0
     je salirSuma
     mov esi, [esi]
+    jmp sumLoop
     
 
     ; Aquí puedes continuar sumando los términos mientras haya nodos disponibles en las listas dinámicas
