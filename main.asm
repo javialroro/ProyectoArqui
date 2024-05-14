@@ -19,6 +19,13 @@ include C:\irvine\Irvine32.inc
     p1 dd ?
     p2 dd ?
     p3 dd ?
+
+    recorrePol1 dd ?
+    recorrePol2 dd ?
+
+    expSumar1 db ?
+    expSumar2 db ?
+
 .code
 main PROC
     lea edx, heap
@@ -134,11 +141,13 @@ salir:
     mov edx, freemem
     mov p3, edx
 
+    call sumar
+
     call ExitProcess ; Termina el programa
 	
-
 main ENDP
 
+; ////////////////Creacion de polinomios en lista dinamica////////////////
 createNode PROC
 	mov ebx, freemem
 
@@ -190,19 +199,40 @@ primeraCorrida:
 	ret
 
 
+; ////////////////Suma los polinomios////////////////
 
+sumar PROC
+    xor eax, eax
+    xor ebx, ebx
+    mov esi, p1
+    mov edi, p2
 
+    add esi, 2
+    add edi, 2
 
+    mov eax, [esi]
+    mov ebx, [edi]
 
-print PROC
-	mov ebx, p1
-    printLoop:
-	mov dx, [ebx]
-	call WriteDec
-	add ebx, 2
-	cmp byte ptr [ebx+2], 0
-	jne printLoop
+sumLoop:
+    cmp ax, bx
+    je iguales
+    add esi, 2
+    cmp esi, 0
+    je salirSuma
+    mov esi, [esi]
+    
+
+    ; Aquí puedes continuar sumando los términos mientras haya nodos disponibles en las listas dinámicas
+
     ret
-print ENDP
+sumar ENDP
+
+iguales:
+; Aquí puedes sumar los coeficientes de los términos que tienen el mismo exponente
+	add eax, ebx
+    jmp sumar
+
+salirSuma:
+    ret
 
 END main
