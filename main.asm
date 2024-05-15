@@ -140,6 +140,7 @@ salir:
     ; guarda la posición en memoria del polinomio resultante
     mov edx, freemem
     mov p3, edx
+    mov nulo,0
 
     call sumar
 
@@ -207,31 +208,66 @@ sumar PROC
     mov esi, p1
     mov edi, p2
 
-sumLoop:
-    add esi, 2
-    add edi, 2
-
-    mov eax, [esi]
-    mov ebx, [edi]
-
-    cmp ax, bx
-    je iguales
-    add esi, 2
-    cmp esi, 0
-    je salirSuma
-    mov esi, [esi]
     jmp sumLoop
-    
 
     ; Aquí puedes continuar sumando los términos mientras haya nodos disponibles en las listas dinámicas
 
     ret
 sumar ENDP
 
+sumLoop:
+
+    mov eax, [esi+2]
+    mov ebx, [edi+2]
+
+    cmp ax, bx
+
+    je iguales
+
+    jg p1mayor
+
+    jl p2mayor
+
+
+
 iguales:
-; Aquí puedes sumar los coeficientes de los términos que tienen el mismo exponente
-	add eax, ebx
-    jmp sumar
+    mov exp, bx
+    mov ax, [esi]
+    mov bx, [edi]
+    add ax, bx
+    mov coef, ax
+
+    call createNode
+
+
+    mov ax, [esi+4]
+    cmp ax, 0
+    je salirSuma
+    
+    mov ax, [edi+4]
+    cmp ax, 0
+    je salirSuma
+
+    mov esi, [esi+4]
+    mov edi, [edi+4]
+    jmp sumLoop
+
+
+p1mayor:
+    mov exp,ax
+    mov bx,[esi]
+    mov coef,bx
+
+    call createNode
+
+    mov ax, [esi+4]
+    cmp ax, 0
+    je salirSuma
+    mov esi, [esi+4]
+    jmp sumLoop
+
+
+p2mayor:
 
 salirSuma:
     ret
