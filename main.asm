@@ -242,11 +242,11 @@ iguales:
 
     mov ax, [esi+4]
     cmp ax, 0
-    je salirSuma
+    je p1finalizado
     
     mov ax, [edi+4]
     cmp ax, 0
-    je salirSuma
+    je p2finalizado
 
     mov esi, [esi+4]
     mov edi, [edi+4]
@@ -280,5 +280,33 @@ p2mayor:
 
 salirSuma:
     ret
+
+p1finalizado:
+    mov ax, [edi+4]
+    cmp ax, 0
+    je salirSuma
+    continuarLoop:
+        mov edi, [edi+4]
+        mov ax, [edi]
+        mov coef, ax
+        mov ax, [edi+2]
+        mov exp, ax
+        call createNode
+        jmp p1finalizado
+
+
+p2finalizado:
+    mov ax, [esi+4]
+    cmp ax, 0
+    je salirSuma
+        continuarLoop2:
+        mov edi, [esi+4]
+        mov ax, [esi]
+        mov coef, ax
+        mov ax, [esi+2]
+        mov exp, ax
+        call createNode
+        jmp p2finalizado
+
 
 END main
