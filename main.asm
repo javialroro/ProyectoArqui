@@ -268,6 +268,15 @@ p1mayor:
 
 
 p2mayor:
+    mov exp,bx
+	mov bx,[edi]
+	mov coef,bx
+	call createNode
+	mov ax, [edi+4]
+	cmp ax, 0
+	je salirSuma
+	mov edi, [edi+4]
+	jmp sumLoop
 
 salirSuma:
     ret
