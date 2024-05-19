@@ -143,6 +143,8 @@ salir:
     mov nulo,0
 
     call sumar
+    mov ebx, p3
+    call printp3
 
     call ExitProcess ; Termina el programa
 	
@@ -322,5 +324,30 @@ colocarultimop2:
     call createNode
     jmp salirSuma
 
+
+
+;///////////////////////////// Imprimir polinomio /////////////////////////////
+printp3 PROC
+	mov ax, [ebx]
+	add ax, 30h
+	call WriteChar
+    mov ax, '^'
+    call WriteChar
+	add ebx, 2
+	mov ax, [ebx]
+	add ax, 30h
+	call WriteChar
+	add ebx, 4
+    mov ax, [ebx]
+	cmp ax, 0
+	je finprint
+    add ebx, 2
+    mov ax, ' '
+    call WriteChar
+	jmp printp3
+printp3 ENDP
+
+finprint:
+	ret
 
 END main
