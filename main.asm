@@ -244,11 +244,11 @@ iguales:
 
     mov ax, [esi+4]
     cmp ax, 0
-    je p1finalizado
+    je p1finalizadoiguales
     
     mov ax, [edi+4]
     cmp ax, 0
-    je p2finalizado
+    je p2finalizadoiguales
 
     mov esi, [esi+4]
     mov edi, [edi+4]
@@ -282,6 +282,27 @@ p2mayor:
 
 salirSuma:
     ret
+
+p1finalizadoiguales:
+	; si el puntero del nodo del segundo polinomio es nulo se sale
+    mov ax, [edi+4]
+    cmp ax, 0
+    je salirSuma
+
+    ; si el puntero del nodo del segundo polinomio no es nulo se avanza al siguiente nodo
+    mov edi, [edi+4]
+    jmp p1finalizado
+
+p2finalizadoiguales:
+	; si el puntero del nodo del primer polinomio es nulo se sale
+	mov ax, [esi+4]
+	cmp ax, 0
+	je salirSuma
+
+	; si el puntero del nodo del primer polinomio no es nulo se avanza al siguiente nodo
+	mov esi, [esi+4]
+	jmp p2finalizado
+
 
 p1finalizado:
     mov ax, [edi+4]
