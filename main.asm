@@ -365,6 +365,8 @@ colocarultimop2:
 ;///////////////////////////// Imprimir polinomio /////////////////////////////
 printp3 PROC
 	mov ax, [ebx]
+    test al, 80h
+    jnz NegativeNumber
 	add ax, 30h
 	call WriteChar
     mov ax, '^'
@@ -382,6 +384,30 @@ printp3 PROC
     call WriteChar
 	jmp printp3
 printp3 ENDP
+
+NegativeNumber:
+    push ax
+	mov ax, '-'
+	call WriteChar
+    pop ax
+	neg ax
+	add ax, 30h
+	call WriteChar
+    mov ax, '^'
+    call WriteChar
+    add ebx, 2
+	mov ax, [ebx]
+	add ax, 30h
+	call WriteChar
+	add ebx, 4
+    mov ax, [ebx]
+	cmp ax, 0
+	je finprint
+    add ebx, 2
+    mov ax, ' '
+    call WriteChar
+	jmp printp3
+	
 
 finprint:
 	ret
