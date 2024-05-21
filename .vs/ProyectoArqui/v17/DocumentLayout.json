@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\steve\\OneDrive\\Documentos\\Universidad\\Arqui\\AAAAAAAAAAAAAAAAAA\\ProyectoArqui\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D6E33368-FE65-4D24-BF47-C73131EC91CB}|ProyectoArqui.vcxproj|C:\\Users\\steve\\OneDrive\\Documentos\\Universidad\\Arqui\\AAAAAAAAAAAAAAAAAA\\ProyectoArqui\\main.asm||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{D6E33368-FE65-4D24-BF47-C73131EC91CB}|ProyectoArqui.vcxproj|solutionrelative:main.asm||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 86,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.asm",
+              "DocumentMoniker": "C:\\Users\\steve\\OneDrive\\Documentos\\Universidad\\Arqui\\AAAAAAAAAAAAAAAAAA\\ProyectoArqui\\main.asm",
+              "RelativeDocumentMoniker": "main.asm",
+              "ToolTip": "C:\\Users\\steve\\OneDrive\\Documentos\\Universidad\\Arqui\\AAAAAAAAAAAAAAAAAA\\ProyectoArqui\\main.asm",
+              "RelativeToolTip": "main.asm",
+              "ViewState": "AQIAAKAAAAAAAAAAAAAtwK0AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-05-21T01:08:40.159Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

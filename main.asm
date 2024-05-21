@@ -63,10 +63,12 @@ evalLoop2:
     mov al, [esi] ; Carga el byte apuntado por esi en al
     cmp al, '.'   ; Compara con '.'
     je salir      ; Si es un punto, salta a salir
-    cmp al, '*'   ; Compara con ','
-    je avanzar2    ; Si es una coma, avanza al siguiente carácter
+    cmp al, '*'   ; Compara con '*'
+    je avanzar2    ; Si es un asterisco, avanza al siguiente carácter
     cmp al, ';'   ; Compara con ';'
     je avanzar2 ; Si es un punto y coma, añade el valor a la segunda lista dinamica
+    cmp al, '-'   ; Compara con '-'
+    je esNegativo2 ; Si es un signo negativo, maneja el valor negativo
     jmp anadirLista2 ; Si no es ni punto ni coma, añade el valor a la primera lista dinamica
     inc esi       ; Incrementa el puntero al buffer
     jmp evalLoop2  ; Salta al siguiente ciclo
@@ -99,6 +101,14 @@ esNegativo:
     neg al        ; Convierte a negativo
     mov coef, ax  ; Guarda en coef
     jmp continuarLista
+
+esNegativo2:
+    inc esi       ; Avanza al siguiente carácter
+    mov al, [esi] ; Carga el byte siguiente
+    sub al, 30h   ; Convierte de ASCII a número
+    neg al        ; Convierte a negativo
+    mov coef, ax  ; Guarda en coef
+    jmp continuarLista2
  
 
 anadirLista:
@@ -127,23 +137,23 @@ continuarLista:
 
  
  anadirLista2:
-; Aqui se añade el valor a la lista dinamica
     mov edx, OFFSET mensajeValor2
     call WriteString
-    call WriteChar
+    mov al, [esi]
+    cmp al, '-'   ; Compara con '-'
+    je esNegativo2
+    sub al, 30h   ; Convierte de ASCII a número
     mov coef, ax
+continuarLista2:
     inc esi       ; Avanza al siguiente carácter
-    mov al,[esi] ; Carga el byte apuntado por esi en al]
+    mov al, [esi] ; Carga el byte apuntado por esi en al
     call Crlf
     mov edx, OFFSET mensajeExponente2
     call WriteString
-    call WriteChar
+    sub al, 30h   ; Convierte de ASCII a número
     mov exp, ax
     call Crlf
-    sub coef, 30h
-    sub exp, 30h
     call createNode
-    ; Meter a lista dinamica
 
     inc esi       ; Avanza al siguiente carácter
     jmp evalLoop2  ; Salta al siguiente ciclo
