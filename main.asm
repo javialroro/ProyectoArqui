@@ -20,11 +20,8 @@ include C:\irvine\Irvine32.inc
     p2 dd ?
     p3 dd ?
 
-    recorrePol1 dd ?
-    recorrePol2 dd ?
 
-    expSumar1 db ?
-    expSumar2 db ?
+
 
 .code
 main PROC
@@ -42,7 +39,21 @@ main PROC
 
     ; Your code to process the input goes here
     mov esi, OFFSET buffer ; Puntero al comienzo del buffer
+    call evalLoop         ; Llama a evalLoop
 
+main ENDP
+
+cambioPolinomio:
+    mov edx, freemem
+    mov p2, edx
+    add banderaPolinomio, 1
+    mov nulo,0
+
+    ; colocar el valor del puntero de nuevo nodo en 0
+    mov punteroNuevoNodo, 0
+
+    inc esi
+    jmp evalLoop2
 
 evalLoop:
     mov al, [esi] ; Carga el byte apuntado por esi en al
@@ -52,9 +63,8 @@ evalLoop:
     je avanzar    ; Si es un asterisco, avanza al siguiente carácter
     cmp al, ';'   ; Compara con ';'
     je cambioPolinomio ; Si es un punto y coma, añade el valor a la segunda lista dinamica
-    cmp al, '-'   ; Compara con '-'
-    je esNegativo ; Si es un signo negativo, maneja el valor negativo
-    jmp anadirLista ; Si no es ni punto ni coma, añade el valor a la primera lista dinamica
+    cmp al, '/'   ; Compara con '/'
+    je exponente
     inc esi       ; Incrementa el puntero al buffer
     jmp evalLoop  ; Salta al siguiente ciclo
 
@@ -67,98 +77,19 @@ evalLoop2:
     je avanzar2    ; Si es un asterisco, avanza al siguiente carácter
     cmp al, ';'   ; Compara con ';'
     je avanzar2 ; Si es un punto y coma, añade el valor a la segunda lista dinamica
-    cmp al, '-'   ; Compara con '-'
-    je esNegativo2 ; Si es un signo negativo, maneja el valor negativo
-    jmp anadirLista2 ; Si no es ni punto ni coma, añade el valor a la primera lista dinamica
+    cmp al, '/'   ; Compara con '/'
+    je exponente
     inc esi       ; Incrementa el puntero al buffer
     jmp evalLoop2  ; Salta al siguiente ciclo
 
 
-cambioPolinomio:
-    mov edx, freemem
-    mov p2, edx
-    add banderaPolinomio, 1
-    mov nulo,0
-
-    ; colocar el valor del puntero de nuevo nodo en 0
-    mov punteroNuevoNodo, 0
-
-    jmp avanzar2
-
-
-avanzar:
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop  ; Salta al siguiente ciclo
-avanzar2:
-    inc esi       ; Avanza al siguiente carácter
-	jmp evalLoop2  ; Salta al siguiente ciclo
-
-
-esNegativo:
-    inc esi       ; Avanza al siguiente carácter
-    mov al, [esi] ; Carga el byte siguiente
-    sub al, 30h   ; Convierte de ASCII a número
-    neg al        ; Convierte a negativo
-    mov coef, ax  ; Guarda en coef
-    jmp continuarLista
-
-esNegativo2:
-    inc esi       ; Avanza al siguiente carácter
-    mov al, [esi] ; Carga el byte siguiente
-    sub al, 30h   ; Convierte de ASCII a número
-    neg al        ; Convierte a negativo
-    mov coef, ax  ; Guarda en coef
-    jmp continuarLista2
- 
-
-anadirLista:
-    mov edx, OFFSET mensajeValor1
-    call WriteString
-    call WriteChar
-    mov al, [esi]
-    cmp al, '-'   ; Compara con '-'
-    je esNegativo
-    sub al, 30h   ; Convierte de ASCII a número
-    mov coef, ax
-continuarLista:
-    inc esi       ; Avanza al siguiente carácter
-    mov al, [esi] ; Carga el byte apuntado por esi en al
-    call Crlf
-    mov edx, OFFSET mensajeExponente1
-    call WriteString
-    call WriteChar
-    sub al, 30h   ; Convierte de ASCII a número
-    mov exp, ax
-    call Crlf
+exponente:
+    inc esi
+    call LeerExponente
     call createNode
-
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop  ; Salta al siguiente ciclo
-
- 
- anadirLista2:
-    mov edx, OFFSET mensajeValor2
-    call WriteString
-    mov al, [esi]
-    cmp al, '-'   ; Compara con '-'
-    je esNegativo2
-    sub al, 30h   ; Convierte de ASCII a número
-    mov coef, ax
-continuarLista2:
-    inc esi       ; Avanza al siguiente carácter
-    mov al, [esi] ; Carga el byte apuntado por esi en al
-    call Crlf
-    mov edx, OFFSET mensajeExponente2
-    call WriteString
-    sub al, 30h   ; Convierte de ASCII a número
-    mov exp, ax
-    call Crlf
-    call createNode
-
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop2  ; Salta al siguiente ciclo
+    inc esi
+    jmp evalLoop
     
-
 salir:
     call Crlf     ; Imprime una nueva línea
 
@@ -172,8 +103,19 @@ salir:
     call printp3
 
     call ExitProcess ; Termina el programa
-	
-main ENDP
+
+
+
+avanzar:
+    inc esi       ; Avanza al siguiente carácter
+    call LeerNumero ; Lee el número
+    inc esi       ; Avanza al siguiente carácter
+    jmp evalLoop  ; Salta al siguiente ciclo
+avanzar2:
+    inc esi       ; Avanza al siguiente carácter
+    call LeerNumero ; Lee el número
+    inc esi       ; Avanza al siguiente carácter
+	jmp evalLoop2  ; Salta al siguiente ciclo
 
 ; ////////////////Creacion de polinomios en lista dinamica////////////////
 createNode PROC
@@ -421,5 +363,53 @@ NegativeNumber:
 
 finprint:
 	ret
+
+
+LeerNumero PROC
+    xor dx,dx
+    xor ax, ax    ; AX = 0, limpia el registro AX
+    xor bx, bx    ; BX = 0, limpia el registro BX
+    mov cx, 10    ; CX = 10, base 10 para números decimales
+LeerLoop:
+    mov dl, [esi] ; Carga el byte en la posición ESI en DL
+    sub dl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
+    add ax, dx
+    mov bl , [esi+1]
+    cmp bl, '/'
+    je finLeer
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    inc esi       ; Incrementa ESI para apuntar al siguiente carácter
+    jmp LeerLoop  ; Repite el bucle
+finLeer:
+    mov coef, ax
+    ret           ; Retorna
+LeerNumero ENDP
+
+
+LeerExponente PROC
+    xor dx,dx
+    xor ax, ax    ; AX = 0, limpia el registro AX
+    xor bx, bx    ; BX = 0, limpia el registro BX
+    mov cx, 10    ; CX = 10, base 10 para números decimales
+LeerLoop:
+    mov dl, [esi] ; Carga el byte en la posición ESI en DL
+    sub dl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
+    add bx, dx
+    mov al , [esi+1]
+    cmp al, '/'
+    je finLeer
+    cmp al, '*'
+    je finLeer
+    cmp al, ';'
+    je finLeer
+    cmp al, '.'
+    je finLeer
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    inc esi       ; Incrementa ESI para apuntar al siguiente carácter
+    jmp LeerLoop  ; Repite el bucle
+finLeer:
+    mov exp, bx
+    ret           ; Retorna
+LeerExponente ENDP
 
 END main
