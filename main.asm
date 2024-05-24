@@ -307,11 +307,11 @@ LeerNumero PROC
     xor dx, dx
     xor ax, ax    ; AX = 0, limpia el registro AX
     xor bx, bx    ; BX = 0, limpia el registro BX
-    mov cx, 10    ; CX = 10, base 10 para números decimales
+    mov cl, 10    ; CX = 10, base 10 para números decimales
     mov bl, [esi] ; Lee el primer carácter
     cmp bl, '-'   ; Verifica si es un signo negativo
     jne LeerLoop  ; Si no es negativo, salta a LeerLoop
-    mov ah, bl    ; Guarda el signo en AH
+    mov ch, bl    ; Guarda el signo en AH
     inc esi       ; Avanza al siguiente carácter
 LeerLoop:
     mov dl, [esi] ; Carga el byte en la posición ESI en DL
@@ -320,11 +320,11 @@ LeerLoop:
     mov bl, [esi+1]
     cmp bl, '/'
     je finLeer
-    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    mul cl        ; Multiplica DX:AX por CX (10), resultado en DX:AX
     inc esi       ; Incrementa ESI para apuntar al siguiente carácter
     jmp LeerLoop  ; Repite el bucle
 finLeer:
-    cmp ah, '-'   ; Verifica si el número es negativo
+    cmp ch, '-'   ; Verifica si el número es negativo
     jne positivo
     neg ax        ; Si es negativo, cambia el signo del número
 positivo:
