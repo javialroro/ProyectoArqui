@@ -1,5 +1,6 @@
 include C:\irvine\Irvine32.inc
 
+
 .data
     mensaje byte " Ingrese cada valor del polinomio con la siguiente forma '*valorexponnenteP1*valorexponenteP1;*valorexponenteP2*valorexponenteP2.' ",0
     buffer byte 100 DUP(?)
@@ -18,6 +19,7 @@ include C:\irvine\Irvine32.inc
     p1 dd ?
     p2 dd ?
     p3 dd ?
+
 
 .code
 main PROC
@@ -39,7 +41,46 @@ main PROC
 
 main ENDP
 
-cambioPolinomio PROC
+
+evalLoop:
+    mov al, [esi] ; Carga el byte apuntado por esi en al
+    cmp al, '.'   ; Compara con '.'
+    je salir      ; Si es un punto, salta a salir
+    cmp al, '*'   ; Compara con '*'
+    je avanzar    ; Si es un asterisco, avanza al siguiente carï¿½cter
+    cmp al, ';'   ; Compara con ';'
+    je cambioPolinomio ; Si es un punto y coma, aï¿½ade el valor a la segunda lista dinamica
+    cmp al, '/'   ; Compara con '/'
+    je exponente
+    inc esi       ; Incrementa el puntero al buffer
+    jmp evalLoop  ; Salta al siguiente ciclo
+
+evalLoop2:
+; Aqui se aï¿½ade el valor a la segunda lista dinamica
+    mov al, [esi] ; Carga el byte apuntado por esi en al
+    cmp al, '.'   ; Compara con '.'
+    je salir      ; Si es un punto, salta a salir
+    cmp al, '*'   ; Compara con '*'
+    je avanzar2    ; Si es un asterisco, avanza al siguiente carï¿½cter
+    cmp al, ';'   ; Compara con ';'
+    je avanzar2 ; Si es un punto y coma, aï¿½ade el valor a la segunda lista dinamica
+    cmp al, '/'   ; Compara con '/'
+    je exponente
+    inc esi       ; Incrementa el puntero al buffer
+    jmp evalLoop2  ; Salta al siguiente ciclo
+
+avanzar:
+    inc esi       ; Avanza al siguiente carï¿½cter
+    call LeerNumero ; Lee el nï¿½mero
+    inc esi       ; Avanza al siguiente carï¿½cter
+    jmp evalLoop  ; Salta al siguiente ciclo
+avanzar2:
+    inc esi       ; Avanza al siguiente carï¿½cter
+    call LeerNumero ; Lee el nï¿½mero
+    inc esi       ; Avanza al siguiente carï¿½cter
+	jmp evalLoop2  ; Salta al siguiente ciclo
+
+cambioPolinomio:
     mov edx, freemem
     mov p2, edx
     add banderaPolinomio, 1
@@ -50,49 +91,65 @@ cambioPolinomio PROC
 
     inc esi
     jmp evalLoop2
-cambioPolinomio ENDP
 
-evalLoop PROC
-    mov al, [esi] ; Carga el byte apuntado por esi en al
-    cmp al, '.'   ; Compara con '.'
-    je salir      ; Si es un punto, salta a salir
-    cmp al, '*'   ; Compara con '*'
-    je avanzar    ; Si es un asterisco, avanza al siguiente carácter
-    cmp al, ';'   ; Compara con ';'
-    je cambioPolinomio ; Si es un punto y coma, añade el valor a la segunda lista dinamica
-    cmp al, '/'   ; Compara con '/'
-    je exponente
-    inc esi       ; Incrementa el puntero al buffer
-    jmp evalLoop  ; Salta al siguiente ciclo
-evalLoop ENDP
-
-evalLoop2 PROC
-    ; Aqui se añade el valor a la segunda lista dinamica
-    mov al, [esi] ; Carga el byte apuntado por esi en al
-    cmp al, '.'   ; Compara con '.'
-    je salir      ; Si es un punto, salta a salir
-    cmp al, '*'   ; Compara con '*'
-    je avanzar2    ; Si es un asterisco, avanza al siguiente carácter
-    cmp al, ';'   ; Compara con ';'
-    je avanzar2 ; Si es un punto y coma, añade el valor a la segunda lista dinamica
-    cmp al, '/'   ; Compara con '/'
-    je exponente
-    inc esi       ; Incrementa el puntero al buffer
-    jmp evalLoop2  ; Salta al siguiente ciclo
-evalLoop2 ENDP
-
-exponente PROC
+exponente:
     inc esi
     call LeerExponente
     call createNode
     inc esi
     jmp evalLoop
-exponente ENDP
 
-salir PROC
-    call Crlf     ; Imprime una nueva línea
+LeerNumero PROC
+    xor dx,dx
+    xor ax, ax    ; AX = 0, limpia el registro AX
+    xor bx, bx    ; BX = 0, limpia el registro BX
+    mov cx, 10    ; CX = 10, base 10 para nï¿½meros decimales
+LeerLoop:
+    mov dl, [esi] ; Carga el byte en la posiciï¿½n ESI en DL
+    sub dl, '0'   ; Convierte el carï¿½cter ASCII a valor numï¿½rico (ej. '3' -> 3)
+    add ax, dx
+    mov bl , [esi+1]
+    cmp bl, '/'
+    je finLeer
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    inc esi       ; Incrementa ESI para apuntar al siguiente carï¿½cter
+    jmp LeerLoop  ; Repite el bucle
+finLeer:
+    mov coef, ax
+    ret           ; Retorna
+LeerNumero ENDP
 
-    ; guarda la posición en memoria del polinomio resultante
+
+LeerExponente PROC
+    xor dx,dx
+    xor ax, ax    ; AX = 0, limpia el registro AX
+    xor bx, bx    ; BX = 0, limpia el registro BX
+    mov cx, 10    ; CX = 10, base 10 para nï¿½meros decimales
+LeerLoop:
+    mov dl, [esi] ; Carga el byte en la posiciï¿½n ESI en DL
+    sub dl, '0'   ; Convierte el carï¿½cter ASCII a valor numï¿½rico (ej. '3' -> 3)
+    add bx, dx
+    mov al , [esi+1]
+    cmp al, '/'
+    je finLeer
+    cmp al, '*'
+    je finLeer
+    cmp al, ';'
+    je finLeer
+    cmp al, '.'
+    je finLeer
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    inc esi       ; Incrementa ESI para apuntar al siguiente carï¿½cter
+    jmp LeerLoop  ; Repite el bucle
+finLeer:
+    mov exp, bx
+    ret           ; Retorna
+LeerExponente ENDP
+    
+salir:
+    call Crlf     ; Imprime una nueva lï¿½nea
+
+    ; guarda la posiciï¿½n en memoria del polinomio resultante
     mov edx, freemem
     mov p3, edx
     mov nulo,0
@@ -101,31 +158,18 @@ salir PROC
     mov ebx, p3
 
     call ExitProcess ; Termina el programa
-salir ENDP
 
-avanzar PROC
-    inc esi       ; Avanza al siguiente carácter
-    call LeerNumero ; Lee el número
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop  ; Salta al siguiente ciclo
-avanzar ENDP
 
-avanzar2 PROC
-    inc esi       ; Avanza al siguiente carácter
-    call LeerNumero ; Lee el número
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop2  ; Salta al siguiente ciclo
-avanzar2 ENDP
 
 ; ////////////////Creacion de polinomios en lista dinamica////////////////
 createNode PROC
-    mov ebx, freemem
+	mov ebx, freemem
 
     ; almacenar el valor de memoria del nuevo nodo en la "variable"
     mov punteroNuevoNodo, ebx
 
     mov dx, coef
-    mov [ebx], dl
+    mov [ebx], dx
 
     ; avanzar dos posiciones en memoria para llegar al exponente (2 bytes de coef)
     add ebx ,2
@@ -157,19 +201,20 @@ createNode PROC
     add ebx, 4
 
     mov freemem, ebx
-    ret
+	ret
 createNode ENDP
 
-primeraCorrida PROC
+primeraCorrida:
     mov edx, nulo
-    mov [ebx], edx
-    mov nulo, ebx
-    add ebx, 4
-    mov freemem, ebx
-    ret
-primeraCorrida ENDP
+	mov [ebx], edx
+	mov nulo, ebx
+	add ebx, 4
+	mov freemem, ebx
+	ret
+
 
 ; ////////////////Suma los polinomios////////////////
+
 sumar PROC
     xor eax, eax
     xor ebx, ebx
@@ -178,19 +223,25 @@ sumar PROC
 
     jmp sumLoop
 
-    ; Aquí puedes continuar sumando los términos mientras haya nodos disponibles en las listas dinámicas
+    ; Aquï¿½ puedes continuar sumando los tï¿½rminos mientras haya nodos disponibles en las listas dinï¿½micas
 
     ret
 sumar ENDP
 
 sumLoop:
+
     mov eax, [esi+2]
     mov ebx, [edi+2]
 
     cmp ax, bx
+
     je iguales
+
     jg p1mayor
+
     jl p2mayor
+
+
 
 iguales:
     mov exp, bx
@@ -198,12 +249,14 @@ iguales:
     mov bx, [edi]
     add ax, bx
     mov coef, ax
+
     call createNode
+
 
     mov ax, [esi+4]
     cmp ax, 0
     je p1finalizadoiguales
-
+    
     mov ax, [edi+4]
     cmp ax, 0
     je p2finalizadoiguales
@@ -212,10 +265,12 @@ iguales:
     mov edi, [edi+4]
     jmp sumLoop
 
+
 p1mayor:
     mov exp,ax
     mov bx,[esi]
     mov coef,bx
+
     call createNode
 
     mov ax, [esi+4]
@@ -224,23 +279,23 @@ p1mayor:
     mov esi, [esi+4]
     jmp sumLoop
 
+
 p2mayor:
     mov exp,bx
-    mov bx,[edi]
-    mov coef,bx
-    call createNode
-
-    mov ax, [edi+4]
-    cmp ax, 0
-    je p2finalizado
-    mov edi, [edi+4]
-    jmp sumLoop
+	mov bx,[edi]
+	mov coef,bx
+	call createNode
+	mov ax, [edi+4]
+	cmp ax, 0
+	je p2finalizado
+	mov edi, [edi+4]
+	jmp sumLoop
 
 salirSuma:
     ret
 
 p1finalizadoiguales:
-    ; si el puntero del nodo del segundo polinomio es nulo se sale
+	; si el puntero del nodo del segundo polinomio es nulo se sale
     mov ax, [edi+4]
     cmp ax, 0
     je salirSuma
@@ -250,16 +305,17 @@ p1finalizadoiguales:
     jmp p1finalizado
 
 p2finalizadoiguales:
-    ; si el puntero del nodo del primer polinomio es nulo se sale
-    mov ax, [esi+4]
-    cmp ax, 0
-    je salirSuma
+	; si el puntero del nodo del primer polinomio es nulo se sale
+	mov ax, [esi+4]
+	cmp ax, 0
+	je salirSuma
 
-    ; si el puntero del nodo del primer polinomio no es nulo se avanza al siguiente nodo
-    mov esi, [esi+4]
-    jmp p2finalizado
+	; si el puntero del nodo del primer polinomio no es nulo se avanza al siguiente nodo
+	mov esi, [esi+4]
+	jmp p2finalizado
 
-p1finalizado PROC
+
+p1finalizado:
     mov ax, [edi+4]
     cmp ax, 0
     je colocarultimop2
@@ -270,9 +326,9 @@ p1finalizado PROC
     call createNode
     mov edi, [edi+4]
     jmp p1finalizado
-p1finalizado ENDP
 
-p2finalizado PROC
+
+p2finalizado:
     mov ax, [esi+4]
     cmp ax, 0
     je colocarultimop1
@@ -283,79 +339,51 @@ p2finalizado PROC
     call createNode
     mov esi, [esi+4]
     jmp p2finalizado
-p2finalizado ENDP
 
-colocarultimop1 PROC
-    mov ax, [esi]
-    mov coef, ax
-    mov ax, [esi+2]
-    mov exp, ax
-    call createNode
-    jmp salirSuma
-colocarultimop1 ENDP
+colocarultimop1:
+	mov ax, [esi]
+	mov coef, ax
+	mov ax, [esi+2]
+	mov exp, ax
+	call createNode
+	jmp salirSuma
 
-colocarultimop2 PROC
-    mov ax, [edi]
+colocarultimop2:
+	mov ax, [edi]
     mov coef, ax
     mov ax, [edi+2]
     mov exp, ax
     call createNode
     jmp salirSuma
-colocarultimop2 ENDP
 
 LeerNumero PROC
     xor dx, dx
     xor ax, ax    ; AX = 0, limpia el registro AX
     xor bx, bx    ; BX = 0, limpia el registro BX
-    mov cl, 10    ; CX = 10, base 10 para números decimales
-    mov bl, [esi] ; Lee el primer carácter
+    mov cl, 10    ; CX = 10, base 10 para nï¿½meros decimales
+    mov bl, [esi] ; Lee el primer carï¿½cter
     cmp bl, '-'   ; Verifica si es un signo negativo
     jne LeerLoop  ; Si no es negativo, salta a LeerLoop
     mov ch, bl    ; Guarda el signo en AH
-    inc esi       ; Avanza al siguiente carácter
+    inc esi       ; Avanza al siguiente carï¿½cter
 LeerLoop:
-    mov dl, [esi] ; Carga el byte en la posición ESI en DL
-    sub dl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
+    mov dl, [esi] ; Carga el byte en la posiciï¿½n ESI en DL
+    sub dl, '0'   ; Convierte el carï¿½cter ASCII a valor numï¿½rico (ej. '3' -> 3)
     add ax, dx
     mov bl, [esi+1]
     cmp bl, '/'
     je finLeer
     mul cl        ; Multiplica DX:AX por CX (10), resultado en DX:AX
-    inc esi       ; Incrementa ESI para apuntar al siguiente carácter
+    inc esi       ; Incrementa ESI para apuntar al siguiente carï¿½cter
     jmp LeerLoop  ; Repite el bucle
 finLeer:
-    cmp ch, '-'   ; Verifica si el número es negativo
+    cmp ch, '-'   ; Verifica si el nï¿½mero es negativo
     jne positivo
-    neg ax        ; Si es negativo, cambia el signo del número
+    neg ax        ; Si es negativo, cambia el signo del nï¿½mero
 positivo:
     mov coef, ax
     ret           ; Retorna
 LeerNumero ENDP
 
-LeerExponente PROC
-    xor dx,dx
-    xor ax, ax    ; AX = 0, limpia el registro AX
-    xor bx, bx    ; BX = 0, limpia el registro BX
-    mov cx, 10    ; CX = 10, base 10 para n?meros decimales
-LeerLoop:
-    mov dl, [esi] ; Carga el byte en la posici?n ESI en DL
-    sub dl, '0'   ; Convierte el car?cter ASCII a valor num?rico (ej. '3' -> 3)
-    add bx, dx
-    mov al , [esi+1]
-    cmp al, '/'
-    je finLeer
-    cmp al, '*'
-    je finLeer
-    cmp al, ';'
-    je finLeer
-    cmp al, '.'
-    je finLeer
-    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
-    inc esi       ; Incrementa ESI para apuntar al siguiente car?cter
-    jmp LeerLoop  ; Repite el bucle
-finLeer:
-    mov exp, bx
-    ret           ; Retorna
-LeerExponente ENDP
 
 END main
