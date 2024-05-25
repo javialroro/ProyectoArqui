@@ -1,7 +1,7 @@
 include C:\irvine\Irvine32.inc
 
 .data
-    mensaje byte " Ingrese cada valor del polinomio con la siguiente forma '*valorexponnenteP1*valorexponenteP1;*valorexponenteP2*valorexponenteP2.' ",0
+    mensaje byte " Ingrese cada valor del polinomio con la siguiente forma '*valor/exponnenteP1*valor/exponenteP1;*valor/exponenteP2*valor/exponenteP2.' ",0
     buffer byte 100 DUP(?)
     mensajeExponente1 byte "El siguiente exponente del polinomio 1 es: ",0
     mensajeValor1 byte "El siguiente valor del polinomio 1 es: ",0
@@ -125,7 +125,7 @@ createNode PROC
     mov punteroNuevoNodo, ebx
 
     mov dx, coef
-    mov [ebx], dl
+    mov [ebx], dx
 
     ; avanzar dos posiciones en memoria para llegar al exponente (2 bytes de coef)
     add ebx ,2
@@ -304,30 +304,33 @@ colocarultimop2 PROC
 colocarultimop2 ENDP
 
 LeerNumero PROC
-    xor dx, dx
     xor ax, ax    ; AX = 0, limpia el registro AX
     xor bx, bx    ; BX = 0, limpia el registro BX
     mov cl, 10    ; CX = 10, base 10 para números decimales
     mov bl, [esi] ; Lee el primer carácter
     cmp bl, '-'   ; Verifica si es un signo negativo
     jne LeerLoop  ; Si no es negativo, salta a LeerLoop
-    mov ch, bl    ; Guarda el signo en AH
+    push bx
     inc esi       ; Avanza al siguiente carácter
 LeerLoop:
-    mov dl, [esi] ; Carga el byte en la posición ESI en DL
-    sub dl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
-    add ax, dx
+    mov bl, [esi] ; Carga el byte en la posición ESI en DL
+    sub bl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
+    add ax, bx
     mov bl, [esi+1]
     cmp bl, '/'
     je finLeer
-    mul cl        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
     inc esi       ; Incrementa ESI para apuntar al siguiente carácter
     jmp LeerLoop  ; Repite el bucle
 finLeer:
-    cmp ch, '-'   ; Verifica si el número es negativo
-    jne positivo
+    pop bx
+    cmp bl, '-'   ; Verifica si el número es negativo
+     jne positivo
     neg ax        ; Si es negativo, cambia el signo del número
+    mov coef, ax
+    ret           ; Retorna
 positivo:
+    pop bx
     mov coef, ax
     ret           ; Retorna
 LeerNumero ENDP
