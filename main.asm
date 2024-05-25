@@ -49,7 +49,7 @@ cambioPolinomio PROC
     mov punteroNuevoNodo, 0
 
     inc esi
-    jmp evalLoop2
+    jmp evalLoop
 cambioPolinomio ENDP
 
 evalLoop PROC
@@ -105,6 +105,7 @@ salir ENDP
 
 avanzar PROC
     inc esi       ; Avanza al siguiente carácter
+    push esi
     call LeerNumero ; Lee el número
     inc esi       ; Avanza al siguiente carácter
     jmp evalLoop  ; Salta al siguiente ciclo
@@ -112,6 +113,7 @@ avanzar ENDP
 
 avanzar2 PROC
     inc esi       ; Avanza al siguiente carácter
+    push esi
     call LeerNumero ; Lee el número
     inc esi       ; Avanza al siguiente carácter
     jmp evalLoop2  ; Salta al siguiente ciclo
@@ -304,6 +306,10 @@ colocarultimop2 PROC
 colocarultimop2 ENDP
 
 LeerNumero PROC
+    push ebp
+    mov ebp, esp
+    mov esi, [ebp+8] ; ESI = Dirección de memoria del string
+
     xor ax, ax    ; AX = 0, limpia el registro AX
     xor bx, bx    ; BX = 0, limpia el registro BX
     mov cl, 10    ; CX = 10, base 10 para números decimales
@@ -325,13 +331,17 @@ LeerLoop:
 finLeer:
     pop bx
     cmp bl, '-'   ; Verifica si el número es negativo
-     jne positivo
+    jne positivo
     neg ax        ; Si es negativo, cambia el signo del número
     mov coef, ax
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
     ret           ; Retorna
 positivo:
     pop bx
     mov coef, ax
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
     ret           ; Retorna
 LeerNumero ENDP
 
