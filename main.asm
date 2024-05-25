@@ -39,18 +39,15 @@ main PROC
 
 main ENDP
 
-cambioPolinomio PROC
-    mov edx, freemem
-    mov p2, edx
-    add banderaPolinomio, 1
-    mov nulo,0
 
-    ; colocar el valor del puntero de nuevo nodo en 0
-    mov punteroNuevoNodo, 0
 
-    inc esi
-    jmp evalLoop
-cambioPolinomio ENDP
+avanzar PROC
+    inc esi       ; Avanza al siguiente carácter
+    push esi
+    call LeerNumero ; Lee el número
+    inc esi       ; Avanza al siguiente carácter
+    jmp evalLoop  ; Salta al siguiente ciclo
+avanzar ENDP
 
 evalLoop PROC
     mov al, [esi] ; Carga el byte apuntado por esi en al
@@ -66,20 +63,20 @@ evalLoop PROC
     jmp evalLoop  ; Salta al siguiente ciclo
 evalLoop ENDP
 
-evalLoop2 PROC
-    ; Aqui se añade el valor a la segunda lista dinamica
-    mov al, [esi] ; Carga el byte apuntado por esi en al
-    cmp al, '.'   ; Compara con '.'
-    je salir      ; Si es un punto, salta a salir
-    cmp al, '*'   ; Compara con '*'
-    je avanzar2    ; Si es un asterisco, avanza al siguiente carácter
-    cmp al, ';'   ; Compara con ';'
-    je avanzar2 ; Si es un punto y coma, añade el valor a la segunda lista dinamica
-    cmp al, '/'   ; Compara con '/'
-    je exponente
-    inc esi       ; Incrementa el puntero al buffer
-    jmp evalLoop2  ; Salta al siguiente ciclo
-evalLoop2 ENDP
+cambioPolinomio PROC
+    mov edx, freemem
+    mov p2, edx
+    add banderaPolinomio, 1
+    mov nulo,0
+
+    ; colocar el valor del puntero de nuevo nodo en 0
+    mov punteroNuevoNodo, 0
+
+    inc esi
+    jmp evalLoop
+cambioPolinomio ENDP
+
+
 
 exponente PROC
     inc esi
@@ -88,6 +85,75 @@ exponente PROC
     inc esi
     jmp evalLoop
 exponente ENDP
+
+
+LeerNumero PROC
+    push ebp
+    mov ebp, esp
+    mov esi, [ebp+8] ; ESI = Dirección de memoria del string
+
+    xor ax, ax    ; AX = 0, limpia el registro AX
+    xor bx, bx    ; BX = 0, limpia el registro BX
+    mov cl, 10    ; CX = 10, base 10 para números decimales
+    mov bl, [esi] ; Lee el primer carácter
+    cmp bl, '-'   ; Verifica si es un signo negativo
+    jne LeerLoop  ; Si no es negativo, salta a LeerLoop
+    push bx
+    inc esi       ; Avanza al siguiente carácter
+LeerLoop:
+    mov bl, [esi] ; Carga el byte en la posición ESI en DL
+    sub bl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
+    add ax, bx
+    mov bl, [esi+1]
+    cmp bl, '/'
+    je finLeer
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    inc esi       ; Incrementa ESI para apuntar al siguiente carácter
+    jmp LeerLoop  ; Repite el bucle
+finLeer:
+    pop bx
+    cmp bl, '-'   ; Verifica si el número es negativo
+    jne positivo
+    neg ax        ; Si es negativo, cambia el signo del número
+    mov coef, ax
+
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
+    ret           ; Retorna
+positivo:
+    pop bx
+    mov coef, ax
+
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
+    ret           ; Retorna
+LeerNumero ENDP
+
+LeerExponente PROC
+    xor dx,dx
+    xor ax, ax    ; AX = 0, limpia el registro AX
+    xor bx, bx    ; BX = 0, limpia el registro BX
+    mov cx, 10    ; CX = 10, base 10 para n?meros decimales
+LeerLoop:
+    mov dl, [esi] ; Carga el byte en la posici?n ESI en DL
+    sub dl, '0'   ; Convierte el car?cter ASCII a valor num?rico (ej. '3' -> 3)
+    add bx, dx
+    mov al , [esi+1]
+    cmp al, '/'
+    je finLeer
+    cmp al, '*'
+    je finLeer
+    cmp al, ';'
+    je finLeer
+    cmp al, '.'
+    je finLeer
+    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
+    inc esi       ; Incrementa ESI para apuntar al siguiente car?cter
+    jmp LeerLoop  ; Repite el bucle
+finLeer:
+    mov exp, bx
+    ret           ; Retorna
+LeerExponente ENDP
 
 salir PROC
     call Crlf     ; Imprime una nueva línea
@@ -103,21 +169,8 @@ salir PROC
     call ExitProcess ; Termina el programa
 salir ENDP
 
-avanzar PROC
-    inc esi       ; Avanza al siguiente carácter
-    push esi
-    call LeerNumero ; Lee el número
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop  ; Salta al siguiente ciclo
-avanzar ENDP
 
-avanzar2 PROC
-    inc esi       ; Avanza al siguiente carácter
-    push esi
-    call LeerNumero ; Lee el número
-    inc esi       ; Avanza al siguiente carácter
-    jmp evalLoop2  ; Salta al siguiente ciclo
-avanzar2 ENDP
+
 
 ; ////////////////Creacion de polinomios en lista dinamica////////////////
 createNode PROC
@@ -305,70 +358,5 @@ colocarultimop2 PROC
     jmp salirSuma
 colocarultimop2 ENDP
 
-LeerNumero PROC
-    push ebp
-    mov ebp, esp
-    mov esi, [ebp+8] ; ESI = Dirección de memoria del string
-
-    xor ax, ax    ; AX = 0, limpia el registro AX
-    xor bx, bx    ; BX = 0, limpia el registro BX
-    mov cl, 10    ; CX = 10, base 10 para números decimales
-    mov bl, [esi] ; Lee el primer carácter
-    cmp bl, '-'   ; Verifica si es un signo negativo
-    jne LeerLoop  ; Si no es negativo, salta a LeerLoop
-    push bx
-    inc esi       ; Avanza al siguiente carácter
-LeerLoop:
-    mov bl, [esi] ; Carga el byte en la posición ESI en DL
-    sub bl, '0'   ; Convierte el carácter ASCII a valor numérico (ej. '3' -> 3)
-    add ax, bx
-    mov bl, [esi+1]
-    cmp bl, '/'
-    je finLeer
-    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
-    inc esi       ; Incrementa ESI para apuntar al siguiente carácter
-    jmp LeerLoop  ; Repite el bucle
-finLeer:
-    pop bx
-    cmp bl, '-'   ; Verifica si el número es negativo
-    jne positivo
-    neg ax        ; Si es negativo, cambia el signo del número
-    mov coef, ax
-    mov esp, ebp       ; Restaura el valor original de ESP
-    pop ebp            ; Restaura el valor original de EBP
-    ret           ; Retorna
-positivo:
-    pop bx
-    mov coef, ax
-    mov esp, ebp       ; Restaura el valor original de ESP
-    pop ebp            ; Restaura el valor original de EBP
-    ret           ; Retorna
-LeerNumero ENDP
-
-LeerExponente PROC
-    xor dx,dx
-    xor ax, ax    ; AX = 0, limpia el registro AX
-    xor bx, bx    ; BX = 0, limpia el registro BX
-    mov cx, 10    ; CX = 10, base 10 para n?meros decimales
-LeerLoop:
-    mov dl, [esi] ; Carga el byte en la posici?n ESI en DL
-    sub dl, '0'   ; Convierte el car?cter ASCII a valor num?rico (ej. '3' -> 3)
-    add bx, dx
-    mov al , [esi+1]
-    cmp al, '/'
-    je finLeer
-    cmp al, '*'
-    je finLeer
-    cmp al, ';'
-    je finLeer
-    cmp al, '.'
-    je finLeer
-    mul cx        ; Multiplica DX:AX por CX (10), resultado en DX:AX
-    inc esi       ; Incrementa ESI para apuntar al siguiente car?cter
-    jmp LeerLoop  ; Repite el bucle
-finLeer:
-    mov exp, bx
-    ret           ; Retorna
-LeerExponente ENDP
 
 END main
