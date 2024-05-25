@@ -82,6 +82,11 @@ exponente PROC
     inc esi
     push esi
     call LeerExponente
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
     inc esi
     jmp evalLoop
@@ -180,30 +185,39 @@ salir ENDP
 
 ; ////////////////Creacion de polinomios en lista dinamica////////////////
 createNode PROC
-    mov ebx, freemem
+    
+    ; [ebp+8] = coeficiente]
+    ; [ebp+10] = exponente
+    ; [ebp+12] = puntero a freemem
+    ; [ebp+16] = puntero a la posicion de puntero del nodo anterior
+
+    push ebp
+    mov ebp, esp
+
+    mov ebx, [ebp+12]
 
     ; almacenar el valor de memoria del nuevo nodo en la "variable"
     mov punteroNuevoNodo, ebx
 
-    mov dx, coef
+    mov dx, [ebp+8]
     mov [ebx], dx
 
     ; avanzar dos posiciones en memoria para llegar al exponente (2 bytes de coef)
     add ebx ,2
-    mov dx, exp
+    mov dx, [ebp+10]
     mov [ebx], dx
 
     ; avanzar dos posiciones en memoria para llegar al puntero del siguiente nodo (2 bytes de exp)
     add ebx, 2
-    mov edx, nulo
-    cmp nulo, 0
+    mov edx, [ebp+16]
+    cmp edx, 0
     je primeraCorrida
 
     ; colocar la direccion de memoria del siguiente nodo en el puntero del nodo anterior
     ; nulo almacena la posicion en memoria del puntero nulo anterior
     ; punteroNuevoNodo apunta a la direccion de memoria del nuevo nodo en el coeficiente
     
-    mov ebx, nulo
+    mov ebx, [ebp+16]
     mov edx, punteroNuevoNodo
     mov [ebx], edx
 
@@ -218,20 +232,30 @@ createNode PROC
     add ebx, 4
 
     mov freemem, ebx
+
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
+
     ret
 createNode ENDP
 
 primeraCorrida PROC
-    mov edx, nulo
+    mov edx, [ebp+16]
     mov [ebx], edx
     mov nulo, ebx
     add ebx, 4
     mov freemem, ebx
+
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
+
     ret
 primeraCorrida ENDP
 
 ; ////////////////Suma los polinomios////////////////
 sumar PROC
+    push ebp
+    mov ebp, esp
     xor eax, eax
     xor ebx, ebx
     mov esi, p1
@@ -259,6 +283,11 @@ iguales:
     mov bx, [edi]
     add ax, bx
     mov coef, ax
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
 
     mov ax, [esi+4]
@@ -277,6 +306,11 @@ p1mayor:
     mov exp,ax
     mov bx,[esi]
     mov coef,bx
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
 
     mov ax, [esi+4]
@@ -289,6 +323,11 @@ p2mayor:
     mov exp,bx
     mov bx,[edi]
     mov coef,bx
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
 
     mov ax, [edi+4]
@@ -298,6 +337,10 @@ p2mayor:
     jmp sumLoop
 
 salirSuma:
+
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
+
     ret
 
 p1finalizadoiguales:
@@ -328,7 +371,13 @@ p1finalizado PROC
     mov coef, ax
     mov ax, [edi+2]
     mov exp, ax
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
+
     mov edi, [edi+4]
     jmp p1finalizado
 p1finalizado ENDP
@@ -341,7 +390,13 @@ p2finalizado PROC
     mov coef, ax
     mov ax, [esi+2]
     mov exp, ax
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
+
     mov esi, [esi+4]
     jmp p2finalizado
 p2finalizado ENDP
@@ -351,7 +406,13 @@ colocarultimop1 PROC
     mov coef, ax
     mov ax, [esi+2]
     mov exp, ax
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
+
     jmp salirSuma
 colocarultimop1 ENDP
 
@@ -360,7 +421,13 @@ colocarultimop2 PROC
     mov coef, ax
     mov ax, [edi+2]
     mov exp, ax
+
+    push nulo
+    push freemem
+    push exp
+    push coef
     call createNode
+
     jmp salirSuma
 colocarultimop2 ENDP
 
