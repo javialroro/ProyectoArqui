@@ -80,6 +80,7 @@ cambioPolinomio ENDP
 
 exponente PROC
     inc esi
+    push esi
     call LeerExponente
     call createNode
     inc esi
@@ -126,10 +127,13 @@ positivo:
 
     mov esp, ebp       ; Restaura el valor original de ESP
     pop ebp            ; Restaura el valor original de EBP
-    ret           ; Retorna
+    ret                ; Retorna
 LeerNumero ENDP
 
 LeerExponente PROC
+    push ebp
+    mov ebp, esp
+    mov esi, [ebp+8] ; ESI = Dirección de memoria del string
     xor dx,dx
     xor ax, ax    ; AX = 0, limpia el registro AX
     xor bx, bx    ; BX = 0, limpia el registro BX
@@ -152,6 +156,8 @@ LeerLoop:
     jmp LeerLoop  ; Repite el bucle
 finLeer:
     mov exp, bx
+    mov esp, ebp       ; Restaura el valor original de ESP
+    pop ebp            ; Restaura el valor original de EBP
     ret           ; Retorna
 LeerExponente ENDP
 
